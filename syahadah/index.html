@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Nilai Syahadah Siswa</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Font Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style untuk loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-2xl">
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6">Form Input Nilai Syahadah</h1>
+
+        <!-- Pesan Status (Error/Success) -->
+        <div id="statusMessage" class="hidden p-4 rounded-md mb-4 text-center text-white"></div>
+
+        <!-- Form Input -->
+        <form id="nilaiForm" class="space-y-4">
+
+            <!-- Baris 1: Kelas dan Siswa -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="selectKelas" class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                    <select id="selectKelas" name="kelas" class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="">Memuat kelas...</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="selectSiswa" class="block text-sm font-medium text-gray-700 mb-1">Siswa</label>
+                    <select id="selectSiswa" name="siswa" class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required disabled>
+                        <option value="">Pilih kelas dahulu</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Baris 2: Mentor dan Pilihan Juz -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="selectMentor" class="block text-sm font-medium text-gray-700 mb-1">Mentor</label>
+                    <select id="selectMentor" name="mentor" class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="">Memuat mentor...</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="selectJuz" class="block text-sm font-medium text-gray-700 mb-1">Pilih Penilaian</label>
+                    <select id="selectJuz" name="juz" class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="">-- Pilih Tipe Penilaian --</option>
+                        <option value="Juz 30">Juz 30 (Per Surat)</option>
+                        <optgroup label="Per Halaman (Juz 1-29)">
+                            <!-- Opsi juz 1-29 akan ditambahkan oleh JS -->
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Kontainer untuk Input Nilai Dinamis -->
+            <div id="nilaiContainer" class="pt-4 border-t border-gray-200">
+                <p class="text-center text-gray-500">Pilih tipe penilaian untuk menampilkan form input nilai.</p>
+            </div>
+
+            <!-- Baris Baru: Nilai Tajwid Keseluruhan -->
+            <div class="pt-4 border-t border-gray-200">
+                <label for="nilaiTajwid" class="block text-sm font-medium text-gray-700 mb-1">Nilai Tajwid (Keseluruhan)</label>
+                <input type="number" id="nilaiTajwid" name="tajwid" min="0" max="100" class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="0-100" required>
+            </div>
+
+            <!-- Tombol Submit -->
+            <div class="pt-4 text-center">
+                <button type
+="submit" id="submitButton" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out">
+                    Kirim Nilai
+                </button>
+                <!-- Indikator Loading -->
+                <div id="loadingIndicator" class="hidden spinner mx-auto mt-4"></div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // --- KONFIGURASI PENTING ---
+        // Ganti URL ini dengan URL Web App dari Google Apps Script Anda (Langkah 3 di README)
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxliH0stQQG4XQI7C_K1IpIptpjM5G_syNiXxOdi_izL_6-Wqo1qVSx_pcxK5A0qH3s/exec';
+
+        // Ganti URL ini dengan URL CSV dari Google Sheet Anda (Langkah 2 di README)
+        const SHEET_SISWA_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQs6j6nE5bT6Ue3ciHMLfJenh6dMkLLaXXgTD7ap0IJXPvHTCbAzeqWgVbbZ7nxNjnQuk_kgAqS1v3-/pub?gid=1696944202&single=true&output=csv';
+        const SHEET_MENTOR_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQs6j6nE5bT6Ue3ciHMLfJenh6dMkLLaXXgTD7ap0IJXPvHTCbAzeqWgVbbZ7nxNjnQuk_kgAqS1v3-/pub?gid=576367904&single=true&output=csv';
+        // -------------------------
+
+        // --- ELEMEN DOM ---
+        const selectKelas = document.getElementById('selectKelas');
+        const selectSiswa = document.getElementById('selectSiswa');
+        const selectMentor = document.getElementById('selectMentor');
+        const selectJuz = document.getElementById('selectJuz');
+        const nilaiContainer = document.getElementById('nilaiContainer');
+        const nilaiForm = document.getElementById('nilaiForm');
+        const submitButton = document.getElementById('submitButton');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // --- DATA ---
+        let dataSiswa = []; // { kelas: 'X', namaSiswa: 'Ali' }
+        const JUZ_30_SURAHS = [
+            'An-Naba\'', 'An-Nazi\'at', '\'Abasa', 'At-Takwir', 'Al-Infitar',
+            'Al-Mutaffifin', 'Al-Insyiqaq', 'Al-Buruj', 'At-Tariq', 'Al-A\'la',
+            'Al-Ghasyiyah', 'Al-Fajr', 'Al-Balad', 'Asy-Syams', 'Al-Lail',
+            'Ad-Duha', 'Asy-Syarh', 'At-Tin', 'Al-\'Alaq', 'Al-Qadr',
+            'Al-Bayyinah', 'Az-Zalzalah', 'Al-\'Adiyat', 'Al-Qari\'ah',
+            'At-Takasur', 'Al-\'Asr', 'Al-Humazah', 'Al-Fil', 'Quraisy',
+            'Al-Ma\'un', 'Al-Kausar', 'Al-Kafirun', 'An-Nasr', 'Al-Masad',
+            'Al-Ikhlas', 'Al-Falaq', 'An-Nas'
+        ];
+
+        // Daftar halaman awal untuk Juz 1 s/d 29 (sesuai Mushaf Madinah 604 hal)
+        // JUZ_START_PAGES[0] = Juz 1 (mulai hal. 2)
+        // JUZ_START_PAGES[1] = Juz 2 (mulai hal. 22)
+        // dst.
+        const JUZ_START_PAGES = [
+             2,  22,  42,  62,  82, 102, 122, 142, 162, 182, 
+           202, 222, 242, 262, 282, 302, 322, 342, 362, 382, 
+           402, 422, 442, 462, 482, 502, 522, 542, 562
+        ];
+
+        // --- FUNGSI ---
+
+        // Menampilkan pesan status
+        function showStatusMessage(message, isError = false) {
+            statusMessage.textContent = message;
+            statusMessage.className = `p-4 rounded-md mb-4 text-center text-white ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            statusMessage.classList.remove('hidden');
+            // Sembunyikan setelah 5 detik
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Fungsi sederhana untuk parse CSV
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const headers = lines.shift().split(',').map(h => h.trim());
+            return lines.map(line => {
+                const values = line.split(',');
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = values[index] ? values[index].trim() : '';
+                });
+                return obj;
+            });
+        }
+
+        // 1. Mengambil data dari Google Sheet (CSV)
+        async function fetchData() {
+            try {
+                // Ambil data siswa
+                const responseSiswa = await fetch(SHEET_SISWA_CSV_URL);
+                if (!responseSiswa.ok) throw new Error('Gagal memuat data siswa');
+                const csvSiswa = await responseSiswa.text();
+                dataSiswa = parseCSV(csvSiswa);
+                
+                // Ambil data mentor
+                const responseMentor = await fetch(SHEET_MENTOR_CSV_URL);
+                if (!responseMentor.ok) throw new Error('Gagal memuat data mentor');
+                const csvMentor = await responseMentor.text();
+                const dataMentor = parseCSV(csvMentor);
+
+                // Populate dropdowns
+                populateKelas(dataSiswa);
+                populateMentor(dataMentor);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showStatusMessage('Gagal memuat data. Periksa URL CSV di konfigurasi.', true);
+                selectKelas.innerHTML = '<option value="">Gagal muat</option>';
+                selectMentor.innerHTML = '<option value="">Gagal muat</option>';
+            }
+        }
+
+        // 2. Populate dropdown Kelas
+        function populateKelas(data) {
+            const kelasSet = new Set(data.map(item => item.Kelas));
+            selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            kelasSet.forEach(kelas => {
+                if (kelas) {
+                    const option = document.createElement('option');
+                    option.value = kelas;
+                    option.textContent = kelas;
+                    selectKelas.appendChild(option);
+                }
+            });
+        }
+
+        // 3. Populate dropdown Mentor
+        function populateMentor(data) {
+            selectMentor.innerHTML = '<option value="">-- Pilih Mentor --</option>';
+            data.forEach(item => {
+                if (item.NamaMentor) {
+                    const option = document.createElement('option');
+                    option.value = item.NamaMentor;
+                    option.textContent = item.NamaMentor;
+                    selectMentor.appendChild(option);
+                }
+            });
+        }
+
+        // 4. Populate dropdown Siswa (ketika kelas berubah)
+        function handleKelasChange() {
+            const selectedKelas = selectKelas.value;
+            selectSiswa.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+            
+            if (selectedKelas) {
+                const siswaDiKelas = dataSiswa.filter(item => item.Kelas === selectedKelas);
+                siswaDiKelas.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.NamaSiswa;
+                    option.textContent = item.NamaSiswa;
+                    selectSiswa.appendChild(option);
+                });
+                selectSiswa.disabled = false;
+            } else {
+                selectSiswa.disabled = true;
+            }
+        }
+
+        // 5. Generate input nilai (ketika juz berubah)
+        function generateScoreInputs() {
+            const selectedJuz = selectJuz.value;
+            nilaiContainer.innerHTML = ''; // Kosongkan kontainer
+
+            if (selectedJuz === 'Juz 30') {
+                // Buat input per surat
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4';
+                JUZ_30_SURAHS.forEach(surah => {
+                    grid.appendChild(createNilaiInput(surah, surah));
+                });
+                nilaiContainer.appendChild(grid);
+            } else if (selectedJuz.startsWith('Juz')) {
+                // Buat input per halaman sesuai halaman Quran
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4';
+                
+                const juzNumber = parseInt(selectedJuz.split(' ')[1]); // Ambil angkanya (1-29)
+                
+                // Cek apakah juz valid (1-29)
+                if (juzNumber >= 1 && juzNumber <= 29) {
+                    const startPage = JUZ_START_PAGES[juzNumber - 1]; // Ambil halaman awal (index 0-based)
+                    
+                    for (let i = 0; i < 20; i++) { // Loop 20 kali (0-19)
+                        const currentPage = startPage + i;
+                        const namaHalaman = `Hal. ${currentPage}`;
+                        const inputName = `Juz${juzNumber}-Hal${currentPage}`; // Nama unik untuk data
+                        grid.appendChild(createNilaiInput(namaHalaman, inputName));
+                    }
+                }
+                nilaiContainer.appendChild(grid);
+            } else {
+                nilaiContainer.innerHTML = '<p class="text-center text-gray-500">Pilih tipe penilaian untuk menampilkan form input nilai.</p>';
+            }
+        }
+
+        // Helper untuk membuat satu input nilai
+        function createNilaiInput(labelText, inputName) {
+            const div = document.createElement('div');
+            div.className = 'flex flex-col';
+            
+            const label = document.createElement('label');
+            label.textContent = labelText;
+            label.className = 'text-sm font-medium text-gray-700 mb-1';
+            
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = "0";
+            input.max = "100";
+            input.className = 'nilai-input w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500';
+            input.placeholder = 'Nilai';
+            // Gunakan data-name untuk menyimpan kunci (misal 'An-Naba' atau 'Juz1-Hal1')
+            input.dataset.name = inputName; 
+            
+            div.appendChild(label);
+            div.appendChild(input);
+            return div;
+        }
+
+        // 6. Handle submit form
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            // Cek URL placeholder
+            if (GOOGLE_APPS_SCRIPT_URL === 'URL_WEB_APP_ANDA_DISINI') {
+                showStatusMessage('Aplikasi belum dikonfigurasi. Harap edit file index.html dan masukkan URL Google Apps Script Anda.', true);
+                return;
+            }
+
+            // Tampilkan loading
+            submitButton.disabled = true;
+            loadingIndicator.classList.remove('hidden');
+
+            // Kumpulkan data skor dinamis
+            const skorData = {};
+            const scoreInputs = nilaiContainer.querySelectorAll('.nilai-input');
+            scoreInputs.forEach(input => {
+                if (input.value) { // Hanya kirim yang ada nilainya
+                    skorData[input.dataset.name] = input.value;
+                }
+            });
+
+            // Siapkan data form utama
+            const formData = new FormData(nilaiForm);
+            
+            // Tambahkan data skor sebagai JSON string
+            formData.append('skorData', JSON.stringify(skorData));
+
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showStatusMessage('Nilai berhasil disimpan!', false);
+                    nilaiForm.reset(); // Reset form
+                    selectSiswa.innerHTML = '<option value="">Pilih kelas dahulu</option>';
+                    selectSiswa.disabled = true;
+                    nilaiContainer.innerHTML = '<p class="text-center text-gray-500">Pilih tipe penilaian untuk menampilkan form input nilai.</p>';
+                } else {
+                    throw new Error(result.message || 'Gagal mengirim data.');
+                }
+
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                showStatusMessage(`Terjadi error: ${error.message}`, true);
+            } finally {
+                // Sembunyikan loading
+                submitButton.disabled = false;
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // --- INISIALISASI ---
+
+        // Isi Opsi Juz 1-29
+        const optgroup = selectJuz.querySelector('optgroup');
+        for (let i = 1; i <= 29; i++) {
+            const option = document.createElement('option');
+            option.value = `Juz ${i}`;
+            option.textContent = `Juz ${i} (Per Halaman)`;
+            optgroup.appendChild(option);
+        }
+
+        // Tambahkan Event Listeners
+        document.addEventListener('DOMContentLoaded', fetchData);
+        selectKelas.addEventListener('change', handleKelasChange);
+        selectJuz.addEventListener('change', generateScoreInputs);
+        nilaiForm.addEventListener('submit', handleSubmit);
+
+    </script>
+</body>
+</html>
+
+

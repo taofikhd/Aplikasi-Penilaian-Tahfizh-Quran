@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Nilai Tahfizh</title>
+    <!-- Memuat Tailwind CSS untuk styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Menggunakan font Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+    <div class="bg-white p-8 sm:p-10 rounded-xl shadow-lg max-w-lg w-full text-center">
+        
+        <!-- Judul Utama -->
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-8">
+            Aplikasi Rekap Nilai Tahfizh
+        </h1>
+        
+        <p class="text-gray-600 mb-10 text-lg">
+            Silakan pilih menu yang ingin Anda akses:
+        </p>
+
+        <!-- Navigasi "Multimenu" -->
+        <nav class="space-y-5">
+            
+            <!-- Tautan ke Laporan Pekanan -->
+            <!-- Pastikan aplikasi ini ada di folder 'laporan_pekanan' -->
+            <a href="./laporan_pekanan/" 
+               class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-xl transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                Laporan Pekanan
+                <span class="block text-sm font-normal text-blue-100 mt-1">Rekap nilai tahfizh pekanan santri</span>
+            </a>
+            
+            <!-- Tautan ke Laporan Semester -->
+            <!-- Pastikan aplikasi ini ada di folder 'laporan_semester' -->
+            <a href="./laporan_semester/" 
+               class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg text-xl transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                Laporan Semester
+                <span class="block text-sm font-normal text-green-100 mt-1">Rekap nilai tahfizh per semester</span>
+            </a>
+            
+            <!-- Tautan ke Syahadah -->
+            <!-- Pastikan aplikasi ini ada di folder 'syahadah' -->
+            <a href="./syahadah/" 
+               class="block w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-lg text-xl transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+                Syahadah
+                <span class="block text-sm font-normal text-purple-100 mt-1">Cetak syahadah kelulusan tahfizh</span>
+            </a>
+
+        </nav>
+
+        <footer class="mt-12 text-gray-500 text-sm">
+            &copy; 2025 - Aplikasi Rekap Tahfizh
+        </footer>
+    </div>
+</body>
+</html>
+

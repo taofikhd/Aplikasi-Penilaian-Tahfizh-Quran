@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Nilai Tahfizh</title>
+    
+    <!-- PWA Manifest & Theme Color -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .loader { border-top-color: #3498db; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #edit-modal { transition: opacity 0.3s ease; }
+        .custom-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>');
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        select:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-12">
+
+    <div class="container mx-auto p-4 max-w-2xl">
+        <!-- Halaman Login -->
+        <div id="login-section" class="bg-white p-8 rounded-xl shadow-lg">
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Aplikasi Nilai Tahfizh</h1>
+            <p class="text-center text-gray-500 mb-6">Silakan masuk menggunakan email guru.</p>
+            <div class="space-y-4">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email Guru</label>
+                    <input type="email" id="email" name="email" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="contoh: guru@email.com">
+                </div>
+                <button id="login-button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Masuk</button>
+            </div>
+            <div id="login-message" class="mt-4 text-center text-sm"></div>
+        </div>
+
+        <!-- Halaman Input Nilai -->
+        <div id="app-section" class="bg-white p-8 rounded-xl shadow-lg hidden">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">Input Nilai Tahfizh</h1>
+                    <p id="welcome-message" class="text-gray-600">Selamat datang!</p>
+                </div>
+                <button id="logout-button" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Keluar</button>
+            </div>
+            
+            <form id="nilai-form" class="space-y-4">
+                <div>
+                    <label for="siswa" class="block text-sm font-medium text-gray-700">Pilih Siswa</label>
+                    <select id="siswa" name="siswa" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"></select>
+                </div>
+
+                <fieldset class="border p-4 rounded-md">
+                    <legend class="text-sm font-medium text-gray-900 px-1">Detail Hafalan</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                        <div>
+                            <label for="juz" class="block text-sm font-medium text-gray-700">Juz</label>
+                            <select id="juz" name="juz" class="custom-select mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></select>
+                        </div>
+                        <div>
+                            <label for="pencapaianHafalan" class="block text-sm font-medium text-gray-700">Nama Surat</label>
+                            <select id="pencapaianHafalan" name="pencapaianHafalan" class="custom-select mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" disabled></select>
+                        </div>
+                        <div>
+                            <label for="ayat" class="block text-sm font-medium text-gray-700">Ayat</label>
+                            <select id="ayat" name="ayat" class="custom-select mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" disabled></select>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="border p-4 rounded-md">
+                    <legend class="text-sm font-medium text-gray-900 px-1">Penilaian</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                         <div>
+                            <label for="nilaiHafalan" class="block text-sm font-medium text-gray-700">Nilai Hafalan</label>
+                            <input type="number" id="nilaiHafalan" name="nilaiHafalan" min="0" max="100" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                        <div>
+                            <label for="nilaiTajwid" class="block text-sm font-medium text-gray-700">Nilai Tajwid</label>
+                            <input type="number" id="nilaiTajwid" name="nilaiTajwid" min="0" max="100" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div>
+                             <label for="kualitasBacaan" class="block text-sm font-medium text-gray-700">Kualitas Bacaan</label>
+                             <select id="kualitasBacaan" name="kualitasBacaan" class="custom-select mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></select>
+                        </div>
+                        <div>
+                             <label for="kedisiplinan" class="block text-sm font-medium text-gray-700">Kedisiplinan</label>
+                             <select id="kedisiplinan" name="kedisiplinan" class="custom-select mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></select>
+                        </div>
+                        <div>
+                             <label for="akhlak" class="block text-sm font-medium text-gray-700">Akhlak</label>
+                             <select id="akhlak" name="akhlak" class="custom-select mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"></select>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <button type="submit" id="submit-button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span id="submit-text">Simpan Nilai</span>
+                    <div id="submit-loader" class="loader w-4 h-4 rounded-full hidden"></div>
+                </button>
+            </form>
+            <div id="app-message" class="mt-4 text-center text-sm h-4"></div>
+
+            <div id="history-section" class="mt-8">
+                <h2 class="text-lg font-semibold text-gray-700 mb-3">Riwayat Input</h2>
+                <div class="overflow-x-auto max-h-96 bg-white rounded-lg shadow border">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hafalan</th>
+                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nilai</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nilai-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 h-full w-full hidden z-50 flex items-center justify-center p-4">
+        <div class="relative mx-auto p-5 border w-full max-w-lg shadow-lg rounded-xl bg-white">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center">Edit Nilai Siswa</h3>
+            <p id="edit-modal-subtitle" class="text-sm text-gray-500 mt-1 mb-4 text-center"></p>
+            <form id="edit-form" class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                 <input type="hidden" id="edit-id" name="id">
+                 <fieldset class="border p-4 rounded-md">
+                    <legend class="text-sm font-medium text-gray-900 px-1">Detail Hafalan</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                        <div>
+                            <label for="edit-juz" class="block text-sm font-medium text-gray-700">Juz</label>
+                            <select id="edit-juz" name="juz" class="custom-select mt-1 block w-full px-3 py-2 border rounded-md"></select>
+                        </div>
+                        <div>
+                            <label for="edit-pencapaianHafalan" class="block text-sm font-medium text-gray-700">Nama Surat</label>
+                            <select id="edit-pencapaianHafalan" name="pencapaianHafalan" class="custom-select mt-1 block w-full px-3 py-2 border rounded-md"></select>
+                        </div>
+                        <div>
+                            <label for="edit-ayat" class="block text-sm font-medium text-gray-700">Ayat</label>
+                            <select id="edit-ayat" name="ayat" class="custom-select mt-1 block w-full px-3 py-2 border rounded-md"></select>
+                        </div>
+                    </div>
+                </fieldset>
+                 <fieldset class="border p-4 rounded-md">
+                    <legend class="text-sm font-medium text-gray-900 px-1">Penilaian</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                         <div>
+                            <label for="edit-nilaiHafalan" class="block text-sm font-medium text-gray-700">Nilai Hafalan</label>
+                            <input type="number" id="edit-nilaiHafalan" name="nilaiHafalan" class="mt-1 block w-full px-3 py-2 border rounded-md">
+                        </div>
+                        <div>
+                            <label for="edit-nilaiTajwid" class="block text-sm font-medium text-gray-700">Nilai Tajwid</label>
+                            <input type="number" id="edit-nilaiTajwid" name="nilaiTajwid" class="mt-1 block w-full px-3 py-2 border rounded-md">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div>
+                             <label for="edit-kualitasBacaan" class="block text-sm font-medium text-gray-700">Kualitas Bacaan</label>
+                             <select id="edit-kualitasBacaan" name="kualitasBacaan" class="custom-select mt-1 block w-full px-3 py-2 border rounded-md"></select>
+                        </div>
+                        <div>
+                             <label for="edit-kedisiplinan" class="block text-sm font-medium text-gray-700">Kedisiplinan</label>
+                             <select id="edit-kedisiplinan" name="kedisiplinan" class="custom-select mt-1 block w-full px-3 py-2 border rounded-md"></select>
+                        </div>
+                        <div>
+                             <label for="edit-akhlak" class="block text-sm font-medium text-gray-700">Akhlak</label>
+                             <select id="edit-akhlak" name="akhlak" class="custom-select mt-1 block w-full px-3 py-2 border rounded-md"></select>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <div class="items-center px-4 py-3 mt-4 sm:flex sm:flex-row-reverse -mb-4 -mx-5 bg-gray-50 rounded-b-xl">
+                <button id="update-button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">Simpan</button>
+                <button id="cancel-edit-button" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Batal</button>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    // --- Data Al-Qur'an ---
+    const surahInfo = {"1":{"name":"Al-Fatihah","ayahs":7},"2":{"name":"Al-Baqarah","ayahs":286},"3":{"name":"Ali 'Imran","ayahs":200},"4":{"name":"An-Nisa'","ayahs":176},"5":{"name":"Al-Ma'idah","ayahs":120},"6":{"name":"Al-An'am","ayahs":165},"7":{"name":"Al-A'raf","ayahs":206},"8":{"name":"Al-Anfal","ayahs":75},"9":{"name":"At-Tawbah","ayahs":129},"10":{"name":"Yunus","ayahs":109},"11":{"name":"Hud","ayahs":123},"12":{"name":"Yusuf","ayahs":111},"13":{"name":"Ar-Ra'd","ayahs":43},"14":{"name":"Ibrahim","ayahs":52},"15":{"name":"Al-Hijr","ayahs":99},"16":{"name":"An-Nahl","ayahs":128},"17":{"name":"Al-Isra'","ayahs":111},"18":{"name":"Al-Kahf","ayahs":110},"19":{"name":"Maryam","ayahs":98},"20":{"name":"Taha","ayahs":135},"21":{"name":"Al-Anbiya'","ayahs":112},"22":{"name":"Al-Hajj","ayahs":78},"23":{"name":"Al-Mu'minun","ayahs":118},"24":{"name":"An-Nur","ayahs":64},"25":{"name":"Al-Furqan","ayahs":77},"26":{"name":"Asy-Syu'ara'","ayahs":227},"27":{"name":"An-Naml","ayahs":93},"28":{"name":"Al-Qasas","ayahs":88},"29":{"name":"Al-'Ankabut","ayahs":69},"30":{"name":"Ar-Rum","ayahs":60},"31":{"name":"Luqman","ayahs":34},"32":{"name":"As-Sajdah","ayahs":30},"33":{"name":"Al-Ahzab","ayahs":73},"34":{"name":"Saba'","ayahs":54},"35":{"name":"Fatir","ayahs":45},"36":{"name":"Yasin","ayahs":83},"37":{"name":"As-Saffat","ayahs":182},"38":{"name":"Sad","ayahs":88},"39":{"name":"Az-Zumar","ayahs":75},"40":{"name":"Ghafir","ayahs":85},"41":{"name":"Fussilat","ayahs":54},"42":{"name":"Asy-Syura","ayahs":53},"43":{"name":"Az-Zukhruf","ayahs":89},"44":{"name":"Ad-Dukhan","ayahs":59},"45":{"name":"Al-Jasiyah","ayahs":37},"46":{"name":"Al-Ahqaf","ayahs":35},"47":{"name":"Muhammad","ayahs":38},"48":{"name":"Al-Fath","ayahs":29},"49":{"name":"Al-Hujurat","ayahs":18},"50":{"name":"Qaf","ayahs":45},"51":{"name":"Az-Zariyat","ayahs":60},"52":{"name":"At-Tur","ayahs":49},"53":{"name":"An-Najm","ayahs":62},"54":{"name":"Al-Qamar","ayahs":55},"55":{"name":"Ar-Rahman","ayahs":78},"56":{"name":"Al-Waqi'ah","ayahs":96},"57":{"name":"Al-Hadid","ayahs":29},"58":{"name":"Al-Mujadilah","ayahs":22},"59":{"name":"Al-Hasyr","ayahs":24},"60":{"name":"Al-Mumtahanah","ayahs":13},"61":{"name":"As-Saff","ayahs":14},"62":{"name":"Al-Jumu'ah","ayahs":11},"63":{"name":"Al-Munafiqun","ayahs":11},"64":{"name":"At-Tagabun","ayahs":18},"65":{"name":"At-Talaq","ayahs":12},"66":{"name":"At-Tahrim","ayahs":12},"67":{"name":"Al-Mulk","ayahs":30},"68":{"name":"Al-Qalam","ayahs":52},"69":{"name":"Al-Haqqah","ayahs":52},"70":{"name":"Al-Ma'arij","ayahs":44},"71":{"name":"Nuh","ayahs":28},"72":{"name":"Al-Jinn","ayahs":28},"73":{"name":"Al-Muzzammil","ayahs":20},"74":{"name":"Al-Muddassir","ayahs":56},"75":{"name":"Al-Qiyamah","ayahs":40},"76":{"name":"Al-Insan","ayahs":31},"77":{"name":"Al-Mursalat","ayahs":50},"78":{"name":"An-Naba'","ayahs":40},"79":{"name":"An-Nazi'at","ayahs":46},"80":{"name":"'Abasa","ayahs":42},"81":{"name":"At-Takwir","ayahs":29},"82":{"name":"Al-Infitar","ayahs":19},"83":{"name":"Al-Mutaffifin","ayahs":36},"84":{"name":"Al-Insyiqaq","ayahs":25},"85":{"name":"Al-Buruj","ayahs":22},"86":{"name":"At-Tariq","ayahs":17},"87":{"name":"Al-A'la","ayahs":19},"88":{"name":"Al-Gasyiyah","ayahs":26},"89":{"name":"Al-Fajr","ayahs":30},"90":{"name":"Al-Balad","ayahs":20},"91":{"name":"Asy-Syams","ayahs":15},"92":{"name":"Al-Lail","ayahs":21},"93":{"name":"Ad-Duha","ayahs":11},"94":{"name":"Asy-Syarh","ayahs":8},"95":{"name":"At-Tin","ayahs":8},"96":{"name":"Al-'Alaq","ayahs":19},"97":{"name":"Al-Qadr","ayahs":5},"98":{"name":"Al-Bayyinah","ayahs":8},"99":{"name":"Az-Zalzalah","ayahs":8},"100":{"name":"Al-'Adiyat","ayahs":11},"101":{"name":"Al-Qari'ah","ayahs":11},"102":{"name":"At-Takasur","ayahs":8},"103":{"name":"Al-'Asr","ayahs":3},"104":{"name":"Al-Humazah","ayahs":9},"105":{"name":"Al-Fil","ayahs":5},"106":{"name":"Quraisy","ayahs":4},"107":{"name":"Al-Ma'un","ayahs":7},"108":{"name":"Al-Kausar","ayahs":3},"109":{"name":"Al-Kafirun","ayahs":6},"110":{"name":"An-Nasr","ayahs":3},"111":{"name":"Al-Lahab","ayahs":5},"112":{"name":"Al-Ikhlas","ayahs":4},"113":{"name":"Al-Falaq","ayahs":5},"114":{"name":"An-Nas","ayahs":6}};
+    const juzToSurahMap = {"1":[1,2],"2":[2],"3":[2,3],"4":[3,4],"5":[4],"6":[4,5],"7":[5,6],"8":[6,7],"9":[7,8],"10":[8,9],"11":[9,10,11],"12":[11,12],"13":[12,13,14],"14":[15,16],"15":[17,18],"16":[18,19,20],"17":[21,22],"18":[23,24,25],"19":[25,26,27],"20":[27,28,29],"21":[29,30,31,32,33],"22":[33,34,35,36],"23":[36,37,38,39],"24":[39,40,41],"25":[41,42,43,44,45],"26":[46,47,48,49,50,51],"27":[51,52,53,54,55,56,57],"28":[58,59,60,61,62,63,64,65,66],"29":[67,68,69,70,71,72,73,74,75,76,77],"30":[78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114]};
+    const kategoriOptions = ["Sangat Baik", "Baik", "Cukup", "Kurang"];
+    const surahNameToNumberMap = Object.entries(surahInfo).reduce((acc, [num, info]) => {
+        acc[info.name] = num;
+        return acc;
+    }, {});
+    let currentGuru = null;
+    
+    // --- Elemen UI ---
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOF3Pc6vqvVqoLoyIlJbFlYT4MroGOKid4iUfEJecw7BOGnavtJx-X7EXvIEVka32u/exec';
+    const loginSection = document.getElementById('login-section'), appSection = document.getElementById('app-section');
+    const loginButton = document.getElementById('login-button'), logoutButton = document.getElementById('logout-button');
+    const emailInput = document.getElementById('email'), loginMessage = document.getElementById('login-message');
+    const welcomeMessage = document.getElementById('welcome-message'), siswaSelect = document.getElementById('siswa');
+    const nilaiForm = document.getElementById('nilai-form'), submitButton = document.getElementById('submit-button');
+    const submitText = document.getElementById('submit-text'), submitLoader = document.getElementById('submit-loader');
+    const appMessage = document.getElementById('app-message');
+    const nilaiTableBody = document.getElementById('nilai-table-body');
+    const editModal = document.getElementById('edit-modal'), editForm = document.getElementById('edit-form');
+    const cancelButton = document.getElementById('cancel-edit-button'), updateButton = document.getElementById('update-button');
+    const editModalSubtitle = document.getElementById('edit-modal-subtitle');
+
+    // --- Fungsi Bantuan ---
+    function populateKategoriSelects() {
+        ['kualitasBacaan','kedisiplinan','akhlak','edit-kualitasBacaan','edit-kedisiplinan','edit-akhlak'].forEach(id => {
+            const sel = document.getElementById(id);
+            sel.innerHTML = '<option value="">-- Pilih --</option>';
+            kategoriOptions.forEach(opt => sel.add(new Option(opt, opt)));
+        });
+    }
+
+    function populateJuzSelects() {
+        ['juz', 'edit-juz'].forEach(id => {
+            const select = document.getElementById(id);
+            select.innerHTML = '<option value="">Pilih Juz</option>';
+            for (let i = 1; i <= 30; i++) {
+                select.add(new Option(`Juz ${i}`, i));
+            }
+        });
+    }
+
+    function populateSurahSelect(juz, surahSelect) {
+        surahSelect.innerHTML = '<option value="">Pilih Surat</option>';
+        surahSelect.disabled = true;
+        if (!juz || !juzToSurahMap[juz]) return;
+
+        const surahNumbers = juzToSurahMap[juz];
+        surahNumbers.forEach(num => {
+            const surah = surahInfo[num];
+            surahSelect.add(new Option(`${num}. ${surah.name}`, num));
+        });
+        surahSelect.disabled = false;
+    }
+
+    function populateAyatSelect(surahNumber, ayatSelect) {
+        ayatSelect.innerHTML = '<option value="">Pilih Ayat</option>';
+        ayatSelect.disabled = true;
+        if (!surahNumber || !surahInfo[surahNumber]) return;
+
+        const totalAyahs = surahInfo[surahNumber].ayahs;
+        for (let i = 1; i <= totalAyahs; i++) {
+            ayatSelect.add(new Option(i, i));
+        }
+        ayatSelect.disabled = false;
+    }
+
+    function showMessage(element, message, isError = false) {
+        element.innerHTML = message.replace(/\n/g, '<br>');
+        element.className = `text-center text-sm ${isError ? 'text-red-600' : 'text-green-600'}`;
+        setTimeout(() => { element.innerHTML = ''; }, 4000);
+    }
+
+    function renderNilaiTable(nilai) {
+        nilaiTableBody.innerHTML = ''; 
+        if (!nilai || nilai.length === 0) {
+            nilaiTableBody.innerHTML = '<tr><td colspan="4" class="px-4 py-4 text-center text-sm text-gray-500">Belum ada data.</td></tr>';
+            return;
+        }
+        nilai.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(item => addNewRowToTable(item, false));
+    }
+    
+    function addNewRowToTable(item, prepend = true) {
+        const noDataRow = nilaiTableBody.querySelector('td[colspan="4"]');
+        if (noDataRow) noDataRow.parentElement.remove();
+
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-row-id', item.id);
+        
+        let surahName = item.pencapaianHafalan || '<i>Data kosong</i>';
+        if (surahInfo[item.pencapaianHafalan]) { // Handles old data that stores numbers
+            surahName = surahInfo[item.pencapaianHafalan].name;
+        }
+
+        tr.innerHTML = `
+            <td class="px-4 py-3 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">${item.namaSiswa || '<i>Siswa?</i>'}</div>
+                <div class="text-xs text-gray-500">${item.kelas || ''}</div>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <div class="text-sm text-gray-800">${surahName}</div>
+                <div class="text-xs text-gray-500">Juz ${item.juz || '-'}, Ayat ${item.ayat || '-'}</div>
+            </td>
+            <td class="px-2 py-3 whitespace-nowrap text-center">
+                <div class="text-sm text-gray-800">${item.nilaiHafalan || '-'} <span class="text-xs text-gray-500">(H)</span> / ${item.nilaiTajwid || '-'} <span class="text-xs text-gray-500">(T)</span></div>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
+                <button class="edit-btn text-indigo-600 hover:text-indigo-900" data-json='${JSON.stringify(item)}'>Edit</button>
+            </td>
+        `;
+        if (prepend) nilaiTableBody.prepend(tr);
+        else nilaiTableBody.appendChild(tr);
+    }
+
+    function openEditModal(data) {
+        document.getElementById('edit-id').value = data.id || '';
+        editModalSubtitle.textContent = `${data.namaSiswa || 'Siswa'} (${data.kelas || 'Kelas'})`;
+        
+        const juzSelect = document.getElementById('edit-juz');
+        const surahSelect = document.getElementById('edit-pencapaianHafalan');
+        const ayatSelect = document.getElementById('edit-ayat');
+
+        let surahIdentifier = data.pencapaianHafalan;
+        let surahNumberToSelect = surahIdentifier;
+
+        if (isNaN(parseInt(surahIdentifier, 10)) && surahNameToNumberMap[surahIdentifier]) {
+            surahNumberToSelect = surahNameToNumberMap[surahIdentifier];
+        }
+
+        juzSelect.value = data.juz || '';
+        populateSurahSelect(data.juz, surahSelect);
+        surahSelect.value = surahNumberToSelect || '';
+        populateAyatSelect(surahNumberToSelect, ayatSelect);
+        ayatSelect.value = data.ayat || '';
+        
+        document.getElementById('edit-nilaiHafalan').value = data.nilaiHafalan || '';
+        document.getElementById('edit-nilaiTajwid').value = data.nilaiTajwid || '';
+        document.getElementById('edit-kualitasBacaan').value = data.kualitasBacaan || '';
+        document.getElementById('edit-kedisiplinan').value = data.kedisiplinan || '';
+        document.getElementById('edit-akhlak').value = data.akhlak || '';
+        editModal.classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+        editModal.classList.add('hidden');
+        editForm.reset();
+    }
+    
+    // --- Logika Utama & Fetch ---
+    function handleLogin() {
+        const email = emailInput.value.trim();
+        if (!email) return showMessage(loginMessage, 'Email tidak boleh kosong.', true);
+        
+        loginButton.innerHTML = '<div class="loader w-5 h-5 rounded-full"></div>';
+        loginButton.disabled = true;
+        
+        fetch(`${SCRIPT_URL}?email=${encodeURIComponent(email)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    currentGuru = { name: data.namaGuru, email: email }; 
+                    welcomeMessage.textContent = `Selamat datang, ${data.namaGuru}!`;
+                    siswaSelect.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+                    data.siswa.forEach(s => {
+                        const opt = new Option(`${s.nama} (${s.kelas})`, s.nama);
+                        siswaSelect.add(opt);
+                    });
+                    renderNilaiTable(data.nilai);
+                    loginSection.classList.add('hidden');
+                    appSection.classList.remove('hidden');
+                } else {
+                    showMessage(loginMessage, data.message, true);
+                }
+            })
+            .catch(error => {
+                showMessage(loginMessage, 'Koneksi Gagal. Periksa kembali deployment Anda.', true);
+            })
+            .finally(() => {
+                loginButton.innerHTML = 'Masuk';
+                loginButton.disabled = false;
+            });
+    }
+
+    function handleLogout() {
+        currentGuru = null;
+        emailInput.value = '';
+        appSection.classList.add('hidden');
+        loginSection.classList.remove('hidden');
+    }
+
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        const formData = new FormData(nilaiForm);
+        const dataToSubmit = Object.fromEntries(formData.entries());
+
+        const surahNumber = dataToSubmit.pencapaianHafalan;
+        if (surahNumber && surahInfo[surahNumber]) {
+            dataToSubmit.pencapaianHafalan = surahInfo[surahNumber].name;
+        }
+
+        dataToSubmit.action = 'create';
+        dataToSubmit.namaGuru = currentGuru.name;
+        dataToSubmit.namaSiswa = dataToSubmit.siswa;
+
+        if (!dataToSubmit.namaSiswa || !dataToSubmit.juz || !dataToSubmit.pencapaianHafalan || !dataToSubmit.ayat) {
+            return showMessage(appMessage, 'Harap isi semua kolom detail hafalan.', true);
+        }
+        
+        submitButton.disabled = true;
+        submitText.classList.add('hidden');
+        submitLoader.classList.remove('hidden');
+
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(dataToSubmit) })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showMessage(appMessage, 'Nilai berhasil disimpan!', false);
+                nilaiForm.reset();
+                document.getElementById('pencapaianHafalan').disabled = true;
+                document.getElementById('ayat').disabled = true;
+                siswaSelect.focus();
+                addNewRowToTable(data.created);
+            } else {
+                showMessage(appMessage, `Error: ${data.message}`, true);
+            }
+        })
+        .catch(error => showMessage(appMessage, 'Gagal mengirim data.', true))
+        .finally(() => {
+            submitButton.disabled = false;
+            submitText.classList.remove('hidden');
+            submitLoader.classList.add('hidden');
+        });
+    }
+
+    function handleUpdateSubmit() {
+        const formData = new FormData(editForm);
+        const updatedDataFromForm = Object.fromEntries(formData.entries());
+        
+        const surahNumber = updatedDataFromForm.pencapaianHafalan;
+        if (surahNumber && surahInfo[surahNumber]) {
+            updatedDataFromForm.pencapaianHafalan = surahInfo[surahNumber].name;
+        }
+        
+        updatedDataFromForm.action = 'update';
+
+        updateButton.textContent = 'Menyimpan...';
+        updateButton.disabled = true;
+
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(updatedDataFromForm) })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showMessage(appMessage, 'Nilai berhasil diperbarui!', false);
+                const id = updatedDataFromForm.id;
+                const rowToUpdate = nilaiTableBody.querySelector(`[data-row-id="${id}"]`);
+
+                if (rowToUpdate) {
+                    const editButton = rowToUpdate.querySelector('.edit-btn');
+                    const originalData = JSON.parse(editButton.dataset.json);
+                    const finalUpdatedData = { ...originalData, ...updatedDataFromForm };
+                    
+                    rowToUpdate.remove();
+                    addNewRowToTable(finalUpdatedData, true);
+                }
+                closeEditModal();
+            } else {
+                showMessage(appMessage, `Gagal memperbarui: ${data.message}`, true);
+            }
+        })
+        .catch(error => showMessage(appMessage, 'Gagal memperbarui data.', true))
+        .finally(() => {
+            updateButton.textContent = 'Simpan';
+            updateButton.disabled = false;
+        });
+    }
+    
+    // --- Event Listeners ---
+    window.addEventListener('DOMContentLoaded', () => {
+        populateKategoriSelects();
+        populateJuzSelects();
+    });
+
+    // Event listeners untuk form utama
+    document.getElementById('juz').addEventListener('change', (e) => {
+        populateSurahSelect(e.target.value, document.getElementById('pencapaianHafalan'));
+        populateAyatSelect(null, document.getElementById('ayat')); // Reset ayat
+    });
+    document.getElementById('pencapaianHafalan').addEventListener('change', (e) => {
+        populateAyatSelect(e.target.value, document.getElementById('ayat'));
+    });
+
+    // Event listeners untuk modal edit
+    document.getElementById('edit-juz').addEventListener('change', (e) => {
+        populateSurahSelect(e.target.value, document.getElementById('edit-pencapaianHafalan'));
+        populateAyatSelect(null, document.getElementById('edit-ayat')); // Reset ayat
+    });
+    document.getElementById('edit-pencapaianHafalan').addEventListener('change', (e) => {
+        populateAyatSelect(e.target.value, document.getElementById('edit-ayat'));
+    });
+
+    loginButton.addEventListener('click', handleLogin);
+    logoutButton.addEventListener('click', handleLogout);
+    nilaiForm.addEventListener('submit', handleFormSubmit);
+    nilaiTableBody.addEventListener('click', e => {
+        if (e.target.classList.contains('edit-btn')) {
+            const data = JSON.parse(e.target.dataset.json);
+            openEditModal(data);
+        }
+    });
+    cancelButton.addEventListener('click', closeEditModal);
+    updateButton.addEventListener('click', handleUpdateSubmit);
+    
+    // Registrasi PWA Service Worker
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                console.log('Service worker terdaftar.', reg);
+            }).catch(err => {
+                console.error('Registrasi service worker gagal:', err);
+            });
+        });
+    }
+</script>
+</body>
+</html>
+

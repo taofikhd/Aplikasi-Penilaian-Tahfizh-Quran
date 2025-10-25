@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Tahfizh Mingguan</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Menggunakan font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Animasi spinner sederhana */
+        .spinner {
+            border-top-color: transparent;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        /* Menyembunyikan panah di input number */
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+        /* Menambahkan style untuk select yang disabled */
+        select:disabled {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            cursor: not-allowed;
+        }
+    </style>
+    <!-- Memuat font Inter dari Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Diubah max-w-md menjadi max-w-2xl untuk menampung tabel -->
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-2xl">
+
+        <!-- 1. Tampilan Login -->
+        <div id="login-view">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Rekap Tahfizh Mentor</h2>
+            <p class="text-gray-600 mb-6 text-center text-sm">Masukkan email Anda yang terdaftar untuk melanjutkan.</p>
+            
+            <div class="space-y-4 max-w-md mx-auto">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Mentor</label>
+                    <input type="email" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="contoh@email.com">
+                </div>
+                
+                <button id="login-button" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 flex items-center justify-center">
+                    <span id="login-text">Masuk</span>
+                    <div id="login-spinner" class="spinner border-2 border-white border-solid rounded-full ml-2 hidden"></div>
+                </button>
+            </div>
+            <div id="login-error" class="mt-4 text-red-600 text-sm text-center hidden"></div>
+        </div>
+
+        <!-- 2. Tampilan Input Data (Tersembunyi) -->
+        <div id="input-view" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Input Hafalan Siswa</h2>
+                <button id="logout-button" class="text-sm text-blue-600 hover:underline focus:outline-none">Logout</button>
+            </div>
+            <p id="welcome-text" class="text-gray-600 mb-6 text-sm">Menampilkan siswa untuk mentor...</p>
+
+            <!-- Form Input -->
+            <form id="rekap-form" class="space-y-4 border-b border-gray-200 pb-6">
+                <!-- Hidden input untuk menyimpan rowId saat edit -->
+                <input type="hidden" id="edit-row-id" name="editRowId" value="">
+
+                <div>
+                    <label for="siswa-dropdown" class="block text-sm font-medium text-gray-700 mb-1">Nama Siswa</label>
+                    <select id="siswa-dropdown" name="siswa" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">Pilih Siswa...</option>
+                        <!-- Pilihan siswa akan diisi oleh JavaScript -->
+                    </select>
+                </div>
+
+                <!-- Grid untuk Juz dan Surat -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-1">
+                        <label for="juz" class="block text-sm font-medium text-gray-700 mb-1">Juz</label>
+                        <select id="juz" name="juz" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                            <option value="">Pilih Juz</option>
+                            <!-- Opsi 1-30 akan diisi oleh JavaScript -->
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label for="surat" class="block text-sm font-medium text-gray-700 mb-1">Surat</label>
+                        <select id="surat" name="surat" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" disabled>
+                            <option value="">Pilih Surat</option>
+                            <!-- Akan diisi oleh JavaScript berdasarkan Juz -->
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Grid untuk Rentang Ayat -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="ayat-mulai" class="block text-sm font-medium text-gray-700 mb-1">Dari Ayat</label>
+                        <input type="number" id="ayat-mulai" name="ayat-mulai" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mulai" min="1" disabled>
+                    </div>
+                    <div>
+                        <label for="ayat-selesai" class="block text-sm font-medium text-gray-700 mb-1">Sampai Ayat</label>
+                        <input type="number" id="ayat-selesai" name="ayat-selesai" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Selesai" min="1" disabled>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="ketercapaian" class="block text-sm font-medium text-gray-700 mb-1">Ketercapaian Target</label>
+                    <select id="ketercapaian" name="ketercapaian" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">Pilih Status...</option>
+                        <option value="Tuntas">Tuntas</option>
+                        <option value="Mengulang">Mengulang</option>
+                    </select>
+                </div>
+
+                <button id="save-button" type="submit" class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 flex items-center justify-center">
+                    <span id="save-text">Simpan Data</span>
+                    <div id="save-spinner" class="spinner border-2 border-white border-solid rounded-full ml-2 hidden"></div>
+                </button>
+                <button id="cancel-edit-button" type="button" class="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition duration-200 flex items-center justify-center mt-2 hidden">
+                    Batal Edit
+                </button>
+            </form>
+            <div id="save-message" class="mt-4 text-sm text-center hidden"></div>
+            
+            <!-- 3. Tampilan Data Tersimpan (BARU) -->
+            <div id="data-view" class="mt-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Data Tersimpan</h3>
+                    <button id="refresh-button" class="text-sm text-blue-600 hover:underline focus:outline-none flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m-15.357-2a8.001 8.001 0 0015.357 2m0 0H15"></path></svg>
+                        Refresh
+                    </button>
+                </div>
+                <div id="data-loading" class="text-center text-gray-500 hidden">
+                    Memuat data...
+                </div>
+                <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hafalan</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rekap-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Data akan diisi oleh JavaScript -->
+                            <tr>
+                                <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center" id="no-data-row">Tidak ada data.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbAuDlghw2KblxM5PXLJlaoM1KN2sNer3vkHkhZsCzrg-CmMkQLRIZox4uleJTAb5bxg/exec'; 
+        // ---------------------
+
+        // --- DATA QUR'AN ---
+        const quranData = [
+            {"id": 1, "name": "Al-Fatihah", "ayat": 7, "juz": [1]},
+            {"id": 2, "name": "Al-Baqarah", "ayat": 286, "juz": [1, 2, 3]},
+            {"id": 3, "name": "Ali 'Imran", "ayat": 200, "juz": [3, 4]},
+            {"id": 4, "name": "An-Nisa'", "ayat": 176, "juz": [4, 5, 6]},
+            {"id": 5, "name": "Al-Ma'idah", "ayat": 120, "juz": [6, 7]},
+            {"id": 6, "name": "Al-An'am", "ayat": 165, "juz": [7, 8]},
+            {"id": 7, "name": "Al-A'raf", "ayat": 206, "juz": [8, 9]},
+            {"id": 8, "name": "Al-Anfal", "ayat": 75, "juz": [9, 10]},
+            {"id": 9, "name": "At-Taubah", "ayat": 129, "juz": [10, 11]},
+            {"id": 10, "name": "Yunus", "ayat": 109, "juz": [11]},
+            {"id": 11, "name": "Hud", "ayat": 123, "juz": [11, 12]},
+            {"id": 12, "name": "Yusuf", "ayat": 111, "juz": [12, 13]},
+            {"id": 13, "name": "Ar-Ra'd", "ayat": 43, "juz": [13]},
+            {"id": 14, "name": "Ibrahim", "ayat": 52, "juz": [13]},
+            {"id": 15, "name": "Al-Hijr", "ayat": 99, "juz": [14]},
+            {"id": 16, "name": "An-Nahl", "ayat": 128, "juz": [14]},
+            {"id": 17, "name": "Al-Isra'", "ayat": 111, "juz": [15]},
+            {"id": 18, "name": "Al-Kahf", "ayat": 110, "juz": [15, 16]},
+            {"id": 19, "name": "Maryam", "ayat": 98, "juz": [16]},
+            {"id": 20, "name": "Taha", "ayat": 135, "juz": [16]},
+            {"id": 21, "name": "Al-Anbiya'", "ayat": 112, "juz": [17]},
+            {"id": 22, "name": "Al-Hajj", "ayat": 78, "juz": [17]},
+            {"id": 23, "name": "Al-Mu'minun", "ayat": 118, "juz": [18]},
+            {"id": 24, "name": "An-Nur", "ayat": 64, "juz": [18]},
+            {"id": 25, "name": "Al-Furqan", "ayat": 77, "juz": [18, 19]},
+            {"id": 26, "name": "Asy-Syu'ara'", "ayat": 227, "juz": [19]},
+            {"id": 27, "name": "An-Naml", "ayat": 93, "juz": [19, 20]},
+            {"id": 28, "name": "Al-Qasas", "ayat": 88, "juz": [20]},
+            {"id": 29, "name": "Al-'Ankabut", "ayat": 69, "juz": [20, 21]},
+            {"id": 30, "name": "Ar-Rum", "ayat": 60, "juz": [21]},
+            {"id": 31, "name": "Luqman", "ayat": 34, "juz": [21]},
+            {"id": 32, "name": "As-Sajdah", "ayat": 30, "juz": [21]},
+            {"id": 33, "name": "Al-Ahzab", "ayat": 73, "juz": [21, 22]},
+            {"id": 34, "name": "Saba'", "ayat": 54, "juz": [22]},
+            {"id": 35, "name": "Fatir", "ayat": 45, "juz": [22]},
+            {"id": 36, "name": "Ya-Sin", "ayat": 83, "juz": [22, 23]},
+            {"id": 37, "name": "As-Saffat", "ayat": 182, "juz": [23]},
+            {"id": 38, "name": "Sad", "ayat": 88, "juz": [23]},
+            {"id": 39, "name": "Az-Zumar", "ayat": 75, "juz": [23, 24]},
+            {"id": 40, "name": "Ghafir", "ayat": 85, "juz": [24]},
+            {"id": 41, "name": "Fussilat", "ayat": 54, "juz": [24, 25]},
+            {"id": 42, "name": "Asy-Syura", "ayat": 53, "juz": [25]},
+            {"id": 43, "name": "Az-Zukhruf", "ayat": 89, "juz": [25]},
+            {"id": 44, "name": "Ad-Dukhan", "ayat": 59, "juz": [25]},
+            {"id": 45, "name": "Al-Jathiyah", "ayat": 37, "juz": [25]},
+            {"id": 46, "name": "Al-Ahqaf", "ayat": 35, "juz": [26]},
+            {"id": 47, "name": "Muhammad", "ayat": 38, "juz": [26]},
+            {"id": 48, "name": "Al-Fath", "ayat": 29, "juz": [26]},
+            {"id": 49, "name": "Al-Hujurat", "ayat": 18, "juz": [26]},
+            {"id": 50, "name": "Qaf", "ayat": 45, "juz": [26]},
+            {"id": 51, "name": "Adz-Dzariyat", "ayat": 60, "juz": [26, 27]},
+            {"id": 52, "name": "At-Tur", "ayat": 49, "juz": [27]},
+            {"id": 53, "name": "An-Najm", "ayat": 62, "juz": [27]},
+            {"id": 54, "name": "Al-Qamar", "ayat": 55, "juz": [27]},
+            {"id": 55, "name": "Ar-Rahman", "ayat": 78, "juz": [27]},
+            {"id": 56, "name": "Al-Waqi'ah", "ayat": 96, "juz": [27]},
+            {"id": 57, "name": "Al-Hadid", "ayat": 29, "juz": [27]},
+            {"id": 58, "name": "Al-Mujadilah", "ayat": 22, "juz": [28]},
+            {"id": 59, "name": "Al-Hasyr", "ayat": 24, "juz": [28]},
+            {"id": 60, "name": "Al-Mumtahanah", "ayat": 13, "juz": [28]},
+            {"id": 61, "name": "As-Saff", "ayat": 14, "juz": [28]},
+            {"id": 62, "name": "Al-Jumu'ah", "ayat": 11, "juz": [28]},
+            {"id": 63, "name": "Al-Munafiqun", "ayat": 11, "juz": [28]},
+            {"id": 64, "name": "At-Taghabun", "ayat": 18, "juz": [28]},
+            {"id": 65, "name": "At-Talaq", "ayat": 12, "juz": [28]},
+            {"id": 66, "name": "At-Tahrim", "ayat": 12, "juz": [28]},
+            {"id": 67, "name": "Al-Mulk", "ayat": 30, "juz": [29]},
+            {"id": 68, "name": "Al-Qalam", "ayat": 52, "juz": [29]},
+            {"id": 69, "name": "Al-Haqqah", "ayat": 52, "juz": [29]},
+            {"id": 70, "name": "Al-Ma'arij", "ayat": 44, "juz": [29]},
+            {"id": 71, "name": "Nuh", "ayat": 28, "juz": [29]},
+            {"id": 72, "name": "Al-Jinn", "ayat": 28, "juz": [29]},
+            {"id": 73, "name": "Al-Muzzammil", "ayat": 20, "juz": [29]},
+            {"id": 74, "name": "Al-Muddaththir", "ayat": 56, "juz": [29]},
+            {"id": 75, "name": "Al-Qiyamah", "ayat": 40, "juz": [29]},
+            {"id": 76, "name": "Al-Insan", "ayat": 31, "juz": [29]},
+            {"id": 77, "name": "Al-Mursalat", "ayat": 50, "juz": [29]},
+            {"id": 78, "name": "An-Naba'", "ayat": 40, "juz": [30]},
+            {"id": 79, "name": "An-Nazi'at", "ayat": 46, "juz": [30]},
+            {"id": 80, "name": "'Abasa", "ayat": 42, "juz": [30]},
+            {"id": 81, "name": "At-Takwir", "ayat": 29, "juz": [30]},
+            {"id": 82, "name": "Al-Infitar", "ayat": 19, "juz": [30]},
+            {"id": 83, "name": "Al-Mutaffifin", "ayat": 36, "juz": [30]},
+            {"id": 84, "name": "Al-Insyiqaq", "ayat": 25, "juz": [30]},
+            {"id": 85, "name": "Al-Buruj", "ayat": 22, "juz": [30]},
+            {"id": 86, "name": "At-Tariq", "ayat": 17, "juz": [30]},
+            {"id": 87, "name": "Al-A'la", "ayat": 19, "juz": [30]},
+            {"id": 88, "name": "Al-Ghasyiyah", "ayat": 26, "juz": [30]},
+            {"id": 89, "name": "Al-Fajr", "ayat": 30, "juz": [30]},
+            {"id": 90, "name": "Al-Balad", "ayat": 20, "juz": [30]},
+            {"id": 91, "name": "Asy-Syams", "ayat": 15, "juz": [30]},
+            {"id": 92, "name": "Al-Lail", "ayat": 21, "juz": [30]},
+            {"id": 93, "name": "Ad-Duha", "ayat": 11, "juz": [30]},
+            {"id": 94, "name": "Asy-Syarh", "ayat": 8, "juz": [30]},
+            {"id": 95, "name": "At-Tin", "ayat": 8, "juz": [30]},
+            {"id": 96, "name": "Al-'Alaq", "ayat": 19, "juz": [30]},
+            {"id": 97, "name": "Al-Qadr", "ayat": 5, "juz": [30]},
+            {"id": 98, "name": "Al-Bayyinah", "ayat": 8, "juz": [30]},
+            {"id": 99, "name": "Az-Zalzalah", "ayat": 8, "juz": [30]},
+            {"id": 100, "name": "Al-'Adiyat", "ayat": 11, "juz": [30]},
+            {"id": 101, "name": "Al-Qari'ah", "ayat": 11, "juz": [30]},
+            {"id": 102, "name": "At-Takathur", "ayat": 8, "juz": [30]},
+            {"id": 103, "name": "Al-'Asr", "ayat": 3, "juz": [30]},
+            {"id": 104, "name": "Al-Humazah", "ayat": 9, "juz": [30]},
+            {"id": 105, "name": "Al-Fil", "ayat": 5, "juz": [30]},
+            {"id": 106, "name": "Quraisy", "ayat": 4, "juz": [30]},
+            {"id": 107, "name": "Al-Ma'un", "ayat": 7, "juz": [30]},
+            {"id": 108, "name": "Al-Kauthar", "ayat": 3, "juz": [30]},
+            {"id": 109, "name": "Al-Kafirun", "ayat": 6, "juz": [30]},
+            {"id": 110, "name": "An-Nasr", "ayat": 3, "juz": [30]},
+            {"id": 111, "name": "Al-Masad", "ayat": 5, "juz": [30]},
+            {"id": 112, "name": "Al-Ikhlas", "ayat": 4, "juz": [30]},
+            {"id": 113, "name": "Al-Falaq", "ayat": 5, "juz": [30]},
+            {"id": 114, "name": "An-Nas", "ayat": 6, "juz": [30]}
+        ];
+        // ---------------------
+
+        // Elemen Tampilan
+        const loginView = document.getElementById('login-view');
+        const inputView = document.getElementById('input-view');
+        
+        // Elemen Login
+        const emailInput = document.getElementById('email');
+        const loginButton = document.getElementById('login-button');
+        const loginText = document.getElementById('login-text');
+        const loginSpinner = document.getElementById('login-spinner');
+        const loginError = document.getElementById('login-error');
+        
+        // Elemen Input
+        const logoutButton = document.getElementById('logout-button');
+        const welcomeText = document.getElementById('welcome-text');
+        const siswaDropdown = document.getElementById('siswa-dropdown');
+        const rekapForm = document.getElementById('rekap-form');
+        const saveButton = document.getElementById('save-button');
+        const saveText = document.getElementById('save-text');
+        const saveSpinner = document.getElementById('save-spinner');
+        const saveMessage = document.getElementById('save-message');
+        const editRowIdInput = document.getElementById('edit-row-id');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
+
+        // Elemen Form Hafalan
+        const juzDropdown = document.getElementById('juz');
+        const suratDropdown = document.getElementById('surat');
+        const ayatMulaiInput = document.getElementById('ayat-mulai');
+        const ayatSelesaiInput = document.getElementById('ayat-selesai');
+        const ketercapaianDropdown = document.getElementById('ketercapaian');
+
+        // Elemen Tampilan Data
+        const dataLoading = document.getElementById('data-loading');
+        const rekapTableBody = document.getElementById('rekap-table-body');
+        const noDataRow = document.getElementById('no-data-row');
+        const refreshButton = document.getElementById('refresh-button');
+
+        let currentMentorEmail = '';
+        let currentMentorName = '';
+
+        // --- FUNGSI ---
+
+        function populateJuzDropdown() {
+            for (let i = 1; i <= 30; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Juz ${i}`;
+                juzDropdown.appendChild(option);
+            }
+        }
+
+        function populateSuratDropdown() {
+            const selectedJuz = parseInt(juzDropdown.value);
+            
+            suratDropdown.innerHTML = '<option value="">Pilih Surat</option>';
+            suratDropdown.disabled = true;
+            resetAyatInput();
+
+            if (!selectedJuz) return;
+
+            const surahsInJuz = quranData.filter(surah => surah.juz.includes(selectedJuz));
+
+            if (surahsInJuz.length > 0) {
+                surahsInJuz.forEach(surah => {
+                    const option = document.createElement('option');
+                    option.value = surah.name;
+                    option.textContent = `${surah.id}. ${surah.name}`;
+                    option.dataset.ayat = surah.ayat;
+                    suratDropdown.appendChild(option);
+                });
+                suratDropdown.disabled = false;
+            }
+        }
+
+        function updateAyatInput() {
+            const selectedOption = suratDropdown.options[suratDropdown.selectedIndex];
+            const maxAyat = selectedOption.dataset.ayat;
+
+            if (maxAyat) {
+                [ayatMulaiInput, ayatSelesaiInput].forEach(input => {
+                    input.max = maxAyat;
+                    input.placeholder = `1 - ${maxAyat}`;
+                    input.disabled = false;
+                    input.value = '';
+                });
+            } else {
+                resetAyatInput();
+            }
+        }
+
+        function resetAyatInput() {
+            [ayatMulaiInput, ayatSelesaiInput].forEach(input => {
+                input.value = '';
+                input.placeholder = 'Ayat';
+                input.disabled = true;
+                input.removeAttribute('max');
+            });
+        }
+
+        function resetHafalanForm() {
+            rekapForm.reset();
+            juzDropdown.selectedIndex = 0;
+            suratDropdown.innerHTML = '<option value="">Pilih Surat</option>';
+            suratDropdown.disabled = true;
+            resetAyatInput();
+            
+            // Reset status edit
+            editRowIdInput.value = '';
+            saveText.textContent = 'Simpan Data';
+            saveButton.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+            saveButton.classList.add('bg-green-600', 'hover:bg-green-700');
+            cancelEditButton.classList.add('hidden');
+        }
+
+        function showMessage(element, message, isError = false) {
+            element.textContent = message;
+            element.className = `mt-4 text-sm text-center ${isError ? 'text-red-600' : 'text-green-600'}`;
+            element.classList.remove('hidden');
+            
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 3000);
+        }
+
+        function setLoading(button, text, spinner, isLoading) {
+            button.disabled = isLoading;
+            text.style.display = isLoading ? 'none' : 'inline';
+            spinner.style.display = isLoading ? 'inline-block' : 'none';
+        }
+
+        async function handleLogin() {
+            const email = emailInput.value.trim();
+            if (!email) {
+                showMessage(loginError, 'Email tidak boleh kosong.', true);
+                return;
+            }
+
+            setLoading(loginButton, loginText, loginSpinner, true);
+            loginError.classList.add('hidden');
+            currentMentorEmail = email;
+
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getSiswa&email=${encodeURIComponent(email)}`);
+                if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+
+                const result = await response.json();
+
+                if (result.success && result.siswa.length > 0) {
+                    populateDropdown(result.siswa);
+                    currentMentorName = result.namaMentor; 
+                    welcomeText.textContent = `Mentor: ${currentMentorName} (${currentMentorEmail})`; 
+                    loginView.classList.add('hidden');
+                    inputView.classList.remove('hidden');
+                    await fetchRekapData(); // Muat data rekap setelah login
+                } else if (result.success && result.siswa.length === 0) {
+                    showMessage(loginError, 'Email ditemukan, namun tidak ada siswa yang terdaftar.', true);
+                } else {
+                    showMessage(loginError, result.message || 'Email tidak terdaftar.', true);
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                showMessage(loginError, 'Gagal terhubung ke server. Periksa konsol.', true);
+            } finally {
+                setLoading(loginButton, loginText, loginSpinner, false);
+            }
+        }
+
+        function populateDropdown(siswaList) {
+            siswaDropdown.innerHTML = '<option value="">Pilih Siswa...</option>';
+            siswaList.forEach(siswa => {
+                const option = document.createElement('option');
+                option.value = `${siswa.nama} (${siswa.kelas})`;
+                option.textContent = `${siswa.nama} (${siswa.kelas})`;
+                siswaDropdown.appendChild(option);
+            });
+        }
+
+        // FUNGSI BARU: Mengambil data rekap
+        async function fetchRekapData() {
+            if (!currentMentorName) return;
+            
+            dataLoading.classList.remove('hidden');
+            rekapTableBody.innerHTML = ''; // Kosongkan tabel
+            noDataRow.classList.add('hidden');
+
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getRekap&mentorName=${encodeURIComponent(currentMentorName)}`);
+                if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+                
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    populateRekapTable(result.data);
+                } else {
+                    noDataRow.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error fetching rekap:', error);
+                rekapTableBody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-sm text-red-600 text-center">Gagal memuat data.</td></tr>`;
+            } finally {
+                dataLoading.classList.add('hidden');
+            }
+        }
+
+        // FUNGSI BARU: Mengisi tabel rekap
+        function populateRekapTable(data) {
+            rekapTableBody.innerHTML = ''; // Kosongkan
+            
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+
+                const formattedDate = new Date(item.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">${formattedDate}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900 font-medium">${item.siswa}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">
+                        <span class="font-medium">Juz ${item.juz}</span>, ${item.surat} (${item.ayat})
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            item.ketercapaian === 'Tuntas' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }">
+                            ${item.ketercapaian}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-right font-medium">
+                        <button class="text-blue-600 hover:text-blue-800" 
+                                data-id="${item.rowId}"
+                                data-siswa="${item.siswa}"
+                                data-juz="${item.juz}"
+                                data-surat="${item.surat}"
+                                data-ayat="${item.ayat}"
+                                data-ketercapaian="${item.ketercapaian}"
+                                onclick="handleEditClick(this)">
+                            Edit
+                        </button>
+                    </td>
+                `;
+                rekapTableBody.appendChild(tr);
+            });
+        }
+
+        // FUNGSI BARU: Menangani klik tombol edit
+        function handleEditClick(button) {
+            const data = button.dataset;
+            
+            // Isi form
+            siswaDropdown.value = data.siswa;
+            juzDropdown.value = data.juz;
+            juzDropdown.dispatchEvent(new Event('change')); // Trigger event untuk isi surat
+
+            suratDropdown.value = data.surat;
+            suratDropdown.dispatchEvent(new Event('change')); // Trigger event untuk isi ayat
+
+            // Pisahkan rentang ayat
+            const ayatParts = data.ayat.split('-');
+            ayatMulaiInput.value = ayatParts[0] || '';
+            ayatSelesaiInput.value = ayatParts[1] || ayatParts[0] || ''; // Handle jika hanya 1 ayat
+
+            ketercapaianDropdown.value = data.ketercapaian;
+            
+            // Set mode edit
+            editRowIdInput.value = data.id;
+            saveText.textContent = 'Update Data';
+            saveButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            saveButton.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+            cancelEditButton.classList.remove('hidden');
+
+            // Scroll ke atas form
+            rekapForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+
+        // FUNGSI DIPERBARUI: Menangani penyimpanan (Create & Update)
+        async function handleSave(event) {
+            event.preventDefault(); 
+
+            const formData = new FormData(rekapForm);
+            const ayatMulai = formData.get('ayat-mulai');
+            const ayatSelesai = formData.get('ayat-selesai');
+            
+            // Validasi rentang ayat
+            if (parseInt(ayatMulai) > parseInt(ayatSelesai)) {
+                showMessage(saveMessage, 'Ayat mulai tidak boleh lebih besar dari ayat selesai.', true);
+                return;
+            }
+            // Gabungkan ayat
+            const ayatValue = ayatMulai === ayatSelesai ? ayatMulai : `${ayatMulai}-${ayatSelesai}`;
+
+            const data = {
+                rowId: formData.get('editRowId'), // Akan kosong jika baru, berisi ID jika edit
+                namaMentor: currentMentorName,
+                siswa: formData.get('siswa'),
+                juz: formData.get('juz'),
+                surat: formData.get('surat'),
+                ayat: ayatValue, // Kirim rentang ayat
+                ketercapaian: formData.get('ketercapaian'),
+            };
+
+            // Validasi
+            if (!data.siswa || !data.juz || !data.surat || !ayatMulai || !data.ketercapaian) {
+                showMessage(saveMessage, 'Semua kolom hafalan harus diisi.', true);
+                return;
+            }
+
+            setLoading(saveButton, saveText, saveSpinner, true);
+            saveMessage.classList.add('hidden');
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text(); 
+                    console.error('Apps Script Error:', errorText);
+                    throw new Error(`Server error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const message = data.rowId ? 'Data berhasil di-update!' : 'Data hafalan berhasil disimpan!';
+                    showMessage(saveMessage, message, false);
+                    resetHafalanForm();
+                    await fetchRekapData(); // Refresh tabel data
+                } else {
+                    showMessage(saveMessage, result.message || 'Gagal menyimpan data.', true);
+                }
+            } catch (error) {
+                console.error('Error saving data:', error);
+                showMessage(saveMessage, `Error: ${error.message}. Periksa konsol.`, true);
+            } finally {
+                setLoading(saveButton, saveText, saveSpinner, false);
+            }
+        }
+
+        function handleLogout() {
+            currentMentorEmail = '';
+            currentMentorName = '';
+            emailInput.value = '';
+            loginError.classList.add('hidden');
+            inputView.classList.add('hidden');
+            loginView.classList.remove('hidden');
+            resetHafalanForm();
+            siswaDropdown.innerHTML = '<option value="">Pilih Siswa...</option>';
+            rekapTableBody.innerHTML = ''; // Kosongkan tabel
+            noDataRow.classList.remove('hidden');
+        }
+
+        // --- Event Listeners ---
+        loginButton.addEventListener('click', handleLogin);
+        rekapForm.addEventListener('submit', handleSave);
+        logoutButton.addEventListener('click', handleLogout);
+        refreshButton.addEventListener('click', fetchRekapData);
+        cancelEditButton.addEventListener('click', resetHafalanForm);
+
+        juzDropdown.addEventListener('change', populateSuratDropdown);
+        suratDropdown.addEventListener('change', updateAyatInput);
+
+        // --- Inisialisasi ---
+        populateJuzDropdown();
+
+    </script>
+</body>
+</html>
+
