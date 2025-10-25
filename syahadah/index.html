@@ -82,13 +82,12 @@
             <!-- Baris Baru: Nilai Tajwid Keseluruhan -->
             <div class="pt-4 border-t border-gray-200">
                 <label for="nilaiTajwid" class="block text-sm font-medium text-gray-700 mb-1">Nilai Tajwid (Keseluruhan)</label>
-                <input type="number" id="nilaiTajwid" name="tajwid" min="0" max="100" class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="0-100" required>
+                <input type="number" id="nilaiTajwid" name="tajwid" min="0" max="99" class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="0-99" oninput="if(this.value.length > 2) this.value = this.value.slice(0, 2)" required>
             </div>
 
             <!-- Tombol Submit -->
             <div class="pt-4 text-center">
-                <button type
-="submit" id="submitButton" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out">
+                <button type="submit" id="submitButton" class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out">
                     Kirim Nilai
                 </button>
                 <!-- Indikator Loading -->
@@ -157,12 +156,21 @@
         // Fungsi sederhana untuk parse CSV
         function parseCSV(csvText) {
             const lines = csvText.trim().split('\n');
-            const headers = lines.shift().split(',').map(h => h.trim());
+            // Bersihkan header, hapus spasi, dan hapus tanda kutip
+            const headers = lines.shift().trim().split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+            
             return lines.map(line => {
-                const values = line.split(',');
                 const obj = {};
+                // Regex ini memecah CSV berdasarkan koma,
+                // TAPI mengabaikan koma yang ada di dalam tanda kutip (")
+                // Ini memastikan nama seperti "Ustadz Fulan, S.Pd" tetap utuh
+                const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                
                 headers.forEach((header, index) => {
-                    obj[header] = values[index] ? values[index].trim() : '';
+                    let value = values[index] ? values[index].trim() : '';
+                    // Hapus tanda kutip (") dari awal dan akhir nilai
+                    value = value.replace(/^"|"$/g, '').trim(); 
+                    obj[header] = value;
                 });
                 return obj;
             });
@@ -268,7 +276,7 @@
                     for (let i = 0; i < 20; i++) { // Loop 20 kali (0-19)
                         const currentPage = startPage + i;
                         const namaHalaman = `Hal. ${currentPage}`;
-                        const inputName = `Juz${juzNumber}-Hal${currentPage}`; // Nama unik untuk data
+                        const inputName = namaHalaman; // <-- DIUBAH: Menggunakan format "Hal. 441"
                         grid.appendChild(createNilaiInput(namaHalaman, inputName));
                     }
                 }
@@ -290,11 +298,18 @@
             const input = document.createElement('input');
             input.type = 'number';
             input.min = "0";
-            input.max = "100";
+            input.max = "99"; // <-- DIUBAH: Maksimal 2 angka
             input.className = 'nilai-input w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500';
-            input.placeholder = 'Nilai';
-            // Gunakan data-name untuk menyimpan kunci (misal 'An-Naba' atau 'Juz1-Hal1')
+            input.placeholder = '0-99'; // <-- Diubah placeholder
+            // Gunakan data-name untuk menyimpan kunci (misal 'An-Naba' atau 'Hal. 441')
             input.dataset.name = inputName; 
+            
+            // Tambahkan validasi oninput untuk membatasi panjang
+            input.oninput = () => {
+                if (input.value.length > 2) {
+                    input.value = input.value.slice(0, 2);
+                }
+            };
             
             div.appendChild(label);
             div.appendChild(input);
@@ -304,12 +319,6 @@
         // 6. Handle submit form
         async function handleSubmit(e) {
             e.preventDefault();
-            
-            // Cek URL placeholder
-            if (GOOGLE_APPS_SCRIPT_URL === 'URL_WEB_APP_ANDA_DISINI') {
-                showStatusMessage('Aplikasi belum dikonfigurasi. Harap edit file index.html dan masukkan URL Google Apps Script Anda.', true);
-                return;
-            }
 
             // Tampilkan loading
             submitButton.disabled = true;
@@ -378,5 +387,6 @@
     </script>
 </body>
 </html>
+
 
 
