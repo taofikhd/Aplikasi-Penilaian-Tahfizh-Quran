@@ -44,23 +44,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-<!-- === TOMBOL KEMBALI KE MENU UTAMA === -->
-<!-- Tautan ini mengarah ke file index.html di folder induk (../) -->
-<a href="../" 
-   class="fixed top-4 left-4 z-50 inline-flex items-center 
-          bg-white px-4 py-2 rounded-lg shadow-md 
-          text-gray-700 font-medium hover:bg-gray-100 
-          transition duration-300 ease-in-out"
-   aria-label="Kembali ke Menu Utama">
-    
-    <!-- Ikon SVG untuk "Home" -->
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-    </svg>
-    
-    Menu Utama
-</a>
-<!-- === AKHIR TOMBOL KEMBALI === -->
 
     <!-- Diubah max-w-md menjadi max-w-2xl untuk menampung tabel -->
     <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-2xl">
@@ -80,6 +63,11 @@
                     <span id="login-text">Masuk</span>
                     <div id="login-spinner" class="spinner border-2 border-white border-solid rounded-full ml-2 hidden"></div>
                 </button>
+                <!-- Tombol Kembali ke Menu Utama -->
+<a href="../" 
+   class="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition duration-200 flex items-center justify-center">
+    Kembali ke Menu Utama
+</a>
             </div>
             <div id="login-error" class="mt-4 text-red-600 text-sm text-center hidden"></div>
         </div>
