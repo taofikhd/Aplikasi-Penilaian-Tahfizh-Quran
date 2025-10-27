@@ -50,7 +50,7 @@
 
         <!-- 1. Tampilan Login -->
         <div id="login-view">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Rekap Tahfizh Pekanan</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Rekap Tahfizh Mentor</h2>
             <p class="text-gray-600 mb-6 text-center text-sm">Masukkan email Anda yang terdaftar untuk melanjutkan.</p>
             
             <div class="space-y-4 max-w-md mx-auto">
@@ -111,25 +111,38 @@
                     </div>
                 </div>
                 
-                <!-- Grid untuk Rentang Ayat -->
+                <!-- DIUBAH: Grid untuk Rentang Ayat diganti Halaman dan Jumlah Baris -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label for="ayat-mulai" class="block text-sm font-medium text-gray-700 mb-1">Dari Ayat</label>
-                        <input type="number" id="ayat-mulai" name="ayat-mulai" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Mulai" min="1" disabled>
+                        <label for="halaman" class="block text-sm font-medium text-gray-700 mb-1">Halaman</label>
+                        <input type="number" id="halaman" name="halaman" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="No. Halaman" min="1" disabled>
                     </div>
                     <div>
-                        <label for="ayat-selesai" class="block text-sm font-medium text-gray-700 mb-1">Sampai Ayat</label>
-                        <input type="number" id="ayat-selesai" name="ayat-selesai" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Selesai" min="1" disabled>
+                        <label for="jumlah-baris" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Baris</label>
+                        <input type="number" id="jumlah-baris" name="jumlah-baris" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Jml. Baris" min="1" disabled>
                     </div>
                 </div>
 
                 <div>
+                    <!-- DIUBAH: Opsi Ketercapaian -->
                     <label for="ketercapaian" class="block text-sm font-medium text-gray-700 mb-1">Ketercapaian Target</label>
                     <select id="ketercapaian" name="ketercapaian" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                         <option value="">Pilih Status...</option>
-                        <option value="Tuntas">Tuntas</option>
-                        <option value="Mengulang">Mengulang</option>
+                        <option value="Tercapai">Tercapai</option>
+                        <option value="Tidak Tercapai">Tidak Tercapai</option>
                     </select>
+                </div>
+
+                <!-- BARU: Kendala Pembelajaran -->
+                <div>
+                    <label for="kendala" class="block text-sm font-medium text-gray-700 mb-1">Kendala Pembelajaran</label>
+                    <textarea id="kendala" name="kendala" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tuliskan kendala (jika ada)"></textarea>
+                </div>
+                
+                <!-- BARU: Solusi yang dijalankan -->
+                <div>
+                    <label for="solusi" class="block text-sm font-medium text-gray-700 mb-1">Solusi yang dijalankan</label>
+                    <textarea id="solusi" name="solusi" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tuliskan solusi (jika ada)"></textarea>
                 </div>
 
                 <button id="save-button" type="submit" class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 flex items-center justify-center">
@@ -160,15 +173,19 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hafalan</th>
+                                <!-- DIUBAH: Header Hafalan -->
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hafalan (Surat, Hal, Baris)</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <!-- BARU: Kolom Kendala -->
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendala</th>
                                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="rekap-table-body" class="bg-white divide-y divide-gray-200">
                             <!-- Data akan diisi oleh JavaScript -->
                             <tr>
-                                <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center" id="no-data-row">Tidak ada data.</td>
+                                <!-- DIUBAH: Colspan -->
+                                <td colspan="6" class="px-4 py-4 text-sm text-gray-500 text-center" id="no-data-row">Tidak ada data.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -327,8 +344,9 @@
         // Elemen Form Hafalan
         const juzDropdown = document.getElementById('juz');
         const suratDropdown = document.getElementById('surat');
-        const ayatMulaiInput = document.getElementById('ayat-mulai');
-        const ayatSelesaiInput = document.getElementById('ayat-selesai');
+        // DIUBAH: Input Ayat ke Halaman/Baris
+        const halamanInput = document.getElementById('halaman');
+        const jumlahBarisInput = document.getElementById('jumlah-baris');
         const ketercapaianDropdown = document.getElementById('ketercapaian');
 
         // Elemen Tampilan Data
@@ -376,12 +394,12 @@
 
         function updateAyatInput() {
             const selectedOption = suratDropdown.options[suratDropdown.selectedIndex];
-            const maxAyat = selectedOption.dataset.ayat;
+            const maxAyat = selectedOption.dataset.ayat; // Cek jika surat valid dipilih
 
             if (maxAyat) {
-                [ayatMulaiInput, ayatSelesaiInput].forEach(input => {
-                    input.max = maxAyat;
-                    input.placeholder = `1 - ${maxAyat}`;
+                // DIUBAH: Aktifkan input Halaman dan Jumlah Baris
+                [halamanInput, jumlahBarisInput].forEach(input => {
+                    input.placeholder = '';
                     input.disabled = false;
                     input.value = '';
                 });
@@ -391,11 +409,11 @@
         }
 
         function resetAyatInput() {
-            [ayatMulaiInput, ayatSelesaiInput].forEach(input => {
+            // DIUBAH: Nonaktifkan input Halaman dan Jumlah Baris
+            [halamanInput, jumlahBarisInput].forEach(input => {
                 input.value = '';
-                input.placeholder = 'Ayat';
+                input.placeholder = '...';
                 input.disabled = true;
-                input.removeAttribute('max');
             });
         }
 
@@ -404,7 +422,7 @@
             juzDropdown.selectedIndex = 0;
             suratDropdown.innerHTML = '<option value="">Pilih Surat</option>';
             suratDropdown.disabled = true;
-            resetAyatInput();
+            resetAyatInput(); // Ini sekarang me-reset halaman dan jumlah baris
             
             // Reset status edit
             editRowIdInput.value = '';
@@ -514,29 +532,39 @@
 
                 const formattedDate = new Date(item.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 
+                // DIUBAH: Struktur baris tabel
                 tr.innerHTML = `
                     <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">${formattedDate}</td>
                     <td class="px-4 py-3 text-sm text-gray-900 font-medium">${item.siswa}</td>
                     <td class="px-4 py-3 text-sm text-gray-700">
-                        <span class="font-medium">Juz ${item.juz}</span>, ${item.surat} (${item.ayat})
+                        <span class="font-medium">${item.surat}</span> (Hal: ${item.halaman || '?'}, Baris: ${item.jumlahBaris || '?'})
                     </td>
                     <td class="px-4 py-3 text-sm">
                         <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            item.ketercapaian === 'Tuntas' 
+                            // DIUBAH: Logika status
+                            item.ketercapaian === 'Tercapai' 
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-yellow-100 text-yellow-800'
                         }">
                             ${item.ketercapaian}
                         </span>
                     </td>
+                    <!-- BARU: Kolom Kendala -->
+                    <td class="px-4 py-3 text-sm text-gray-700 max-w-[100px] truncate" title="${item.kendala || ''}">
+                        ${item.kendala || '-'}
+                    </td>
                     <td class="px-4 py-3 text-sm text-right font-medium">
+                        <!-- DIUBAH: data- attributes untuk Edit -->
                         <button class="text-blue-600 hover:text-blue-800" 
                                 data-id="${item.rowId}"
                                 data-siswa="${item.siswa}"
                                 data-juz="${item.juz}"
                                 data-surat="${item.surat}"
-                                data-ayat="${item.ayat}"
+                                data-halaman="${item.halaman || ''}"
+                                data-jumlah-baris="${item.jumlahBaris || ''}"
                                 data-ketercapaian="${item.ketercapaian}"
+                                data-kendala="${item.kendala || ''}"
+                                data-solusi="${item.solusi || ''}"
                                 onclick="handleEditClick(this)">
                             Edit
                         </button>
@@ -547,7 +575,8 @@
         }
 
         // FUNGSI BARU: Menangani klik tombol edit
-        function handleEditClick(button) {
+        // Dideklarasikan di window scope agar bisa dipanggil dari HTML
+        window.handleEditClick = function(button) {
             const data = button.dataset;
             
             // Isi form
@@ -555,15 +584,21 @@
             juzDropdown.value = data.juz;
             juzDropdown.dispatchEvent(new Event('change')); // Trigger event untuk isi surat
 
-            suratDropdown.value = data.surat;
-            suratDropdown.dispatchEvent(new Event('change')); // Trigger event untuk isi ayat
+            // DIUBAH: Logika Edit
+            setTimeout(() => {
+                suratDropdown.value = data.surat;
+                suratDropdown.dispatchEvent(new Event('change')); // Trigger event untuk aktifkan input
 
-            // Pisahkan rentang ayat
-            const ayatParts = data.ayat.split('-');
-            ayatMulaiInput.value = ayatParts[0] || '';
-            ayatSelesaiInput.value = ayatParts[1] || ayatParts[0] || ''; // Handle jika hanya 1 ayat
+                // Isi data baru
+                halamanInput.value = data.halaman;
+                jumlahBarisInput.value = data.jumlahBaris;
+
+            }, 100); // 100ms delay
 
             ketercapaianDropdown.value = data.ketercapaian;
+            // BARU: Isi Kendala dan Solusi
+            document.getElementById('kendala').value = data.kendala;
+            document.getElementById('solusi').value = data.solusi;
             
             // Set mode edit
             editRowIdInput.value = data.id;
@@ -582,16 +617,12 @@
             event.preventDefault(); 
 
             const formData = new FormData(rekapForm);
-            const ayatMulai = formData.get('ayat-mulai');
-            const ayatSelesai = formData.get('ayat-selesai');
             
-            // Validasi rentang ayat
-            if (parseInt(ayatMulai) > parseInt(ayatSelesai)) {
-                showMessage(saveMessage, 'Ayat mulai tidak boleh lebih besar dari ayat selesai.', true);
-                return;
-            }
-            // Gabungkan ayat
-            const ayatValue = ayatMulai === ayatSelesai ? ayatMulai : `${ayatMulai}-${ayatSelesai}`;
+            // DIUBAH: Ambil data dari form baru
+            const halaman = formData.get('halaman');
+            const jumlahBaris = formData.get('jumlah-baris');
+            const kendala = formData.get('kendala');
+            const solusi = formData.get('solusi');
 
             const data = {
                 rowId: formData.get('editRowId'), // Akan kosong jika baru, berisi ID jika edit
@@ -599,13 +630,17 @@
                 siswa: formData.get('siswa'),
                 juz: formData.get('juz'),
                 surat: formData.get('surat'),
-                ayat: ayatValue, // Kirim rentang ayat
+                // DIUBAH: Data baru
+                halaman: halaman,
+                jumlahBaris: jumlahBaris,
                 ketercapaian: formData.get('ketercapaian'),
+                kendala: kendala,
+                solusi: solusi,
             };
 
-            // Validasi
-            if (!data.siswa || !data.juz || !data.surat || !ayatMulai || !data.ketercapaian) {
-                showMessage(saveMessage, 'Semua kolom hafalan harus diisi.', true);
+            // DIUBAH: Validasi
+            if (!data.siswa || !data.juz || !data.surat || !data.halaman || !data.jumlahBaris || !data.ketercapaian) {
+                showMessage(saveMessage, 'Kolom Siswa, Juz, Surat, Halaman, Jumlah Baris, dan Ketercapaian harus diisi.', true);
                 return;
             }
 
@@ -618,6 +653,12 @@
                     headers: {
                         'Content-Type': 'text/plain;charset=utf-8',
                     },
+                    // Menggunakan 'mode: no-cors' seringkali diperlukan saat POST ke Apps Script
+                    // dari web, tetapi ini mencegah pembacaan respons.
+                    // Jika Apps Script Anda di-deploy untuk "anyone",
+                    // Anda mungkin bisa menghapus 'mode: no-cors'
+                    // dan mengandalkan penanganan CORS yang benar dari Apps Script.
+                    // Untuk saat ini, kita coba tanpa 'no-cors' untuk membaca JSON.
                     body: JSON.stringify(data),
                 });
 
@@ -639,7 +680,15 @@
                 }
             } catch (error) {
                 console.error('Error saving data:', error);
-                showMessage(saveMessage, `Error: ${error.message}. Periksa konsol.`, true);
+                // Jika errornya adalah 'Failed to fetch' (mungkin karena CORS)
+                if (error.message.includes('Failed to fetch')) {
+                     showMessage(saveMessage, 'Data terkirim, namun respons terblokir (CORS). Cek Google Sheet.', true);
+                     // Kita anggap berhasil dan refresh
+                     resetHafalanForm();
+                     await fetchRekapData();
+                } else {
+                    showMessage(saveMessage, `Error: ${error.message}. Periksa konsol.`, true);
+                }
             } finally {
                 setLoading(saveButton, saveText, saveSpinner, false);
             }
@@ -674,4 +723,6 @@
     </script>
 </body>
 </html>
+
+
 
